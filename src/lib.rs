@@ -50,14 +50,14 @@ pub fn get_bitmap_bits(hbitmap: HBITMAP, include_file_headers: bool) -> Vec<u8> 
 
         GetDIBits(hdc, hbitmap, 0, bmp.bmHeight as u32, Some(bits.as_mut_ptr() as *mut c_void), &mut bitmap_info, DIB_RGB_COLORS);
 
+        let _ = DeleteDC(hdc);
+        let _ = DeleteObject(hbitmap);    
+
         if include_file_headers {
             let headers = get_bitmap_header_bytes(&bitmap_info, bits.len());
-
+            
             return [headers, bits].concat()
         }
-
-        let _ = DeleteDC(hdc);
-        let _ = DeleteObject(hbitmap);
 
         return bits;
     }

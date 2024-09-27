@@ -10,14 +10,10 @@ When trying to get preview from file that is not an image (.zip or .exe) will th
 use std::io::{Error, Write};
 
 pub fn main() -> Result<(), Error> {
-  let hbitmap = thumbcache::get_hbitmap(r"C:\path-to-file.jpeg", 96, 96, 0x08)?;
+  let bmp = thumbcache::get_bmp(r"C:\path-to-file.jpeg", 96, 96)?;
   
-  // true  — include .bpm file headers
-  // false — dont
-  let bitmap = thumbcache::get_bitmap_bits(hbitmap, true);
-
   let mut file_out = std::fs::File::create("./out.bmp")?;
-  let _ = file_out.write_all(&bitmap);
+  let _ = file_out.write_all(&bmp);
   
   Ok(())
 }

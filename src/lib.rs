@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 use windows::core::{Interface, PCWSTR};
 use windows::Win32::Foundation::SIZE;
-use windows::Win32::Graphics::Gdi::{DeleteObject, GetObjectW, GetDIBits, CreateCompatibleDC, DeleteDC, BITMAP, BITMAPFILEHEADER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC};
+use windows::Win32::Graphics::Gdi::{CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits, GetObjectW, BITMAP, BITMAPFILEHEADER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HGDIOBJ};
 use windows::Win32::System::Com::{CoInitializeEx, COINIT};
 use windows::Win32::UI::Shell::{IShellItem, IShellItemImageFactory, SHCreateItemFromParsingName, SIIGBF};
 
@@ -39,9 +39,11 @@ pub fn get_bmp(file_path: &str, width: i32, height: i32) -> Result<Vec<u8>, wind
 
     let bytes = unsafe {
         let mut bmp: BITMAP = std::mem::zeroed();
-        GetObjectW(hbitmap, std::mem::size_of::<BITMAP>() as i32, Some(&mut bmp as *mut _ as *mut _));
+        let hgdiobj: HGDIOBJ = hbitmap.into();
 
-        let hdc = CreateCompatibleDC(HDC(0 as *mut c_void));
+        GetObjectW(hgdiobj, std::mem::size_of::<BITMAP>() as i32, Some(&mut bmp as *mut _ as *mut _));
+
+        let hdc = CreateCompatibleDC(None);
         let mut bitmap_info = BITMAPINFO {
             bmiHeader: BITMAPINFOHEADER {
                 biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
@@ -61,7 +63,7 @@ pub fn get_bmp(file_path: &str, width: i32, height: i32) -> Result<Vec<u8>, wind
         GetDIBits(hdc, hbitmap, 0, bmp.bmHeight as u32, Some(bits.as_mut_ptr() as *mut c_void), &mut bitmap_info, DIB_RGB_COLORS);
 
         let _ = DeleteDC(hdc);
-        let _ = DeleteObject(hbitmap);
+        let _ = DeleteObject(hgdiobj);
 
         let file_header = BITMAPFILEHEADER {
             bfType: 0x4D42,

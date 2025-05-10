@@ -9,8 +9,6 @@ readme = "README.md"
 license = "MIT"
 keywords = ["windows", "thumbnail", "preview"]
 exclude = ["src/main.rs"]
-[dependencies]
-image = "^0.25"
 
 [dependencies.windows]
 version = "0.61.1"
